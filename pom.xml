@@ -190,6 +190,11 @@
             </dependency>
             <dependency>
                 <groupId>org.inaetics.pubsub</groupId>
+                <artifactId>org.inaetics.pubsub.psa.nats</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.inaetics.pubsub</groupId>
                 <artifactId>org.inaetics.pubsub.examples.pubsub.common</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -327,6 +332,7 @@
         <module>pubsub.serialization.json</module>
         <module>examples</module>
         <module>deploy</module>
+        <module>pubsub.psa.nats</module>
     </modules>
 
 </project>

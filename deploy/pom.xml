@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>org.inaetics.pubsub</groupId>
-            <artifactId>org.inaetics.pubsub.psa.zeromq</artifactId>
+            <artifactId>org.inaetics.pubsub.psa.nats</artifactId>
         </dependency>
 
         <dependency>
