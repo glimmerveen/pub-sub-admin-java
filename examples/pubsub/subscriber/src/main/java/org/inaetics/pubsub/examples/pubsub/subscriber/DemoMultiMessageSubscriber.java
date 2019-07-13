@@ -1,13 +1,20 @@
 package org.inaetics.pubsub.examples.pubsub.subscriber;
 
 import org.inaetics.pubsub.api.MultiMessageSubscriber;
+import org.inaetics.pubsub.api.Subscriber;
 import org.inaetics.pubsub.examples.pubsub.common.Location;
 import org.inaetics.pubsub.examples.pubsub.common.PointOfInterrest;
+import org.osgi.service.component.annotations.Component;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+@Component(
+        immediate = true,
+        service = MultiMessageSubscriber.class,
+        property = Subscriber.PUBSUB_TOPIC + "=poi1"
+)
 public class DemoMultiMessageSubscriber implements MultiMessageSubscriber {
 
     private final Collection<Class<?>> receiveClasses = Collections.unmodifiableCollection(Arrays.asList(Location.class, PointOfInterrest.class));

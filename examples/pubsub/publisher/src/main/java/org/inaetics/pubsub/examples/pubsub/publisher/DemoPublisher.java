@@ -16,7 +16,12 @@ package org.inaetics.pubsub.examples.pubsub.publisher;
 import org.inaetics.pubsub.api.Publisher;
 import org.inaetics.pubsub.examples.pubsub.common.Location;
 import org.inaetics.pubsub.examples.pubsub.common.PointOfInterrest;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
+@Component(immediate = true)
 public class DemoPublisher {
 
     private volatile Publisher publisher;
@@ -38,11 +43,14 @@ public class DemoPublisher {
         }
     });
 
-    public DemoPublisher() {
+    @Activate
+    public DemoPublisher(@Reference(target = "(" + Publisher.PUBSUB_TOPIC + "=poi1)") Publisher publisher) {
         loc = new Location();
         poi = new PointOfInterrest();
         poi.setName("Test");
         poi.setLocation(loc);
+
+        start();
     }
 
     private void sendLocationUpdate() {
@@ -58,6 +66,7 @@ public class DemoPublisher {
         thread.start();
     }
 
+    @Deactivate
     public void stop(){
         thread.interrupt();
         try {

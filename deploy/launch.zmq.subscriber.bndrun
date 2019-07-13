@@ -18,8 +18,9 @@
   bnd.identity; id=org.apache.felix.gogo.shell, \
   bnd.identity; id=org.apache.felix.gogo.command, \
   bnd.identity; id=org.apache.felix.configadmin, \
-  bnd.identity; id=org.apache.felix.dependencymanager.shell, \
   bnd.identity; id=org.apache.felix.log, \
+  bnd.identity; id=org.apache.felix.logback, \
+  bnd.identity; id=org.apache.felix.rootcause, \
   bnd.identity; id=org.inaetics.pubsub.topologymanager, \
   bnd.identity; id=org.inaetics.pubsub.discovery.etcd, \
   bnd.identity; id=org.inaetics.pubsub.serialization.json, \

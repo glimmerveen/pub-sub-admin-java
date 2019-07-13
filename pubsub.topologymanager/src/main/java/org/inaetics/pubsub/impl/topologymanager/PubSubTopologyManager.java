@@ -31,18 +31,27 @@ import org.inaetics.pubsub.spi.pubsubadmin.PubSubAdmin;
 import org.inaetics.pubsub.spi.utils.Constants;
 import org.inaetics.pubsub.spi.utils.Utils;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.hooks.service.FindHook;
 import org.osgi.framework.hooks.service.ListenerHook;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.LogService;
 
 import javax.xml.ws.Service;
 
 import static org.osgi.framework.Constants.SERVICE_ID;
 
-
-public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointListener, ManagedService {
+@Component(
+        service = { ListenerHook.class, DiscoveredEndpointListener.class },
+        property = {
+                "osgi.command.scope=pubsub",
+                "osgi.command.function=pstm"
+        }
+)
+public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointListener {
 
     private class TopicSenderOrReceiverEntry {
         public String key = null; //(sender-/receiver-)${scope}-${topic}
@@ -79,8 +88,6 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
         public Properties endpoint = null;
     }
 
-    public final static String SERVICE_PID = PubSubTopologyManager.class.getName();
-
     private final int PSA_UPDATE_DELAY = 15;
 
     private volatile boolean verbose = true;
@@ -111,10 +118,18 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
         }
     }, "PubSub TopologyManager");
 
+    @Activate
+    public PubSubTopologyManager(@Reference LogService logService) {
+        this.m_LogService = logService;
+
+        start();
+    }
+
     public void start() {
         psaHandlingThread.start();
     }
 
+    @Deactivate
     public void stop() {
         try {
             psaHandlingThread.interrupt();
@@ -130,6 +145,7 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
         this.findPsaForEndpoint();
     }
 
+    @Reference(service = PubSubAdmin.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE, unbind = "adminRemoved")
     public void adminAdded(ServiceReference<PubSubAdmin> adminRef, PubSubAdmin admin) {
         Long svcId = (Long)adminRef.getProperty(SERVICE_ID);
 
@@ -262,6 +278,7 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
         }
     }
 
+    @Reference(service = AnnounceEndpointListener.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE, unbind = "announceEndointListenerRemoved")
     public void announceEndointListenerAdded(AnnounceEndpointListener listener) {
         synchronized (this.announceEndpointListeners) {
             this.announceEndpointListeners.add(listener);
@@ -291,6 +308,7 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
 
     }
 
+    @Reference(service = Subscriber.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE, unbind = "subscriberRemoved")
     public void subscriberAdded(ServiceReference<Subscriber> ref, Subscriber svc) {
         //NOTE new local subscriber service register
         //1) First trying to see if a TopicReceiver already exists for this subscriber, if found
@@ -437,11 +455,6 @@ public class PubSubTopologyManager implements ListenerHook, DiscoveredEndpointLi
                 }
             }
         }
-    }
-
-    @Override
-    public void updated(Dictionary<String, ?> dictionary) throws ConfigurationException {
-        //TODO
     }
 
     private void teardownTopicSenderAndReceivers() {

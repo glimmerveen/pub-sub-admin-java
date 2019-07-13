@@ -17,15 +17,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.inaetics.pubsub.spi.serialization.Serializer;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import java.io.IOException;
 
+@Component(
+        service = Serializer.class,
+        property = Serializer.SERIALIZER_NAME_KEY + "=" + JacksonSerializer.SERIALIZER_JACKSON
+)
 public class JacksonSerializer implements Serializer {
 
     private ObjectMapper mapper = new ObjectMapper();
     private volatile LogService logService;
     public static final String SERIALIZER_JACKSON = "json";
+
+    @Activate
+    public JacksonSerializer(@Reference LogService logService) {
+        this.logService = logService;
+    }
 
     @Override
     public byte[] serialize(Object obj) {

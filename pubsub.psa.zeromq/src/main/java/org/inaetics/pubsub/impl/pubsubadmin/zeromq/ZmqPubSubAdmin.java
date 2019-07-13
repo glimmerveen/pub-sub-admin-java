@@ -20,6 +20,7 @@ import org.inaetics.pubsub.spi.utils.Utils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.LogService;
 import org.zeromq.ZAuth;
 import org.zeromq.ZContext;
@@ -32,9 +33,14 @@ import java.util.UUID;
 
 import static org.osgi.framework.Constants.SERVICE_ID;
 
+@Component(
+        service = PubSubAdmin.class,
+        property = {
+                "osgi.command.scope=pubsub",
+                "osgi.command.function=zmq"
+        }
+)
 public class ZmqPubSubAdmin implements PubSubAdmin {
-
-    public static final String SERVICE_PID = ZmqPubSubAdmin.class.getName();
 
     private final Map<Long, ServiceReference<Serializer>> serializers = new Hashtable<>();
     private final int basePort = 50000; /*TODO make configureable*/
@@ -54,7 +60,11 @@ public class ZmqPubSubAdmin implements PubSubAdmin {
     private ZAuth zmqAuth;
 
 
-    public ZmqPubSubAdmin() {
+    @Activate
+    public ZmqPubSubAdmin(@Reference LogService logService) {
+        this.log = logService;
+
+        start();
     }
 
     public synchronized void start() {
@@ -78,6 +88,7 @@ public class ZmqPubSubAdmin implements PubSubAdmin {
 
     }
 
+    @Deactivate
     public synchronized void stop() {
         System.out.println("Stop " + this.getClass().getName());
         if (zmqAuth != null) {
@@ -234,6 +245,7 @@ public class ZmqPubSubAdmin implements PubSubAdmin {
         }
     }
 
+    @Reference(service = Serializer.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE, unbind = "removeSerializer")
     public synchronized void addSerializer(ServiceReference<Serializer> serRef) {
         long svcId = (Long) serRef.getProperty(SERVICE_ID);
         this.serializers.put(svcId, serRef);

@@ -20,6 +20,7 @@ import org.inaetics.pubsub.spi.discovery.DiscoveredEndpointListener;
 import org.inaetics.pubsub.spi.utils.Constants;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.LogService;
 
 import java.io.IOException;
@@ -35,7 +36,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class EtcdDiscovery implements AnnounceEndpointListener, ManagedService {
+@Component(
+        service = AnnounceEndpointListener.class,
+        property = {
+                "osgi.command.scope=pubsub",
+                "osgi.command.function=psd"
+        }
+)
+public class EtcdDiscovery implements AnnounceEndpointListener {
 
     private volatile LogService log;
 
@@ -71,12 +79,16 @@ public class EtcdDiscovery implements AnnounceEndpointListener, ManagedService {
     //protected by this
     private long nextWaitForIndex = -1L;
 
+    @Activate
+    public EtcdDiscovery(@Reference LogService logService) {
+        this.log = logService;
 
-    public EtcdDiscovery(EtcdWrapper etcd, int ttl) {
-        this.ttl = ttl;
+        this.ttl = 10;
         this.refreshDelay = (int) (ttl / 2);
-        this.etcd = etcd;
+        this.etcd = new EtcdWrapper();
         this.rootPath = ROOT_PATH_DEFAULT;
+
+        start();
     }
 
     public void start() {
@@ -89,6 +101,7 @@ public class EtcdDiscovery implements AnnounceEndpointListener, ManagedService {
         watchThread.start();
     }
 
+    @Deactivate
     public void stop() {
         refreshScheduler.shutdown();
         try {
@@ -192,11 +205,11 @@ public class EtcdDiscovery implements AnnounceEndpointListener, ManagedService {
         }
     }
 
-    @Override
-    public void updated(Dictionary<String, ?> dictionary) throws ConfigurationException {
-
-    }
-
+    @Reference(
+            policy = ReferencePolicy.DYNAMIC,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            unbind = "discoveredEndpointListenerRemoved"
+    )
     public void discoveredEndpointListenerAdded(DiscoveredEndpointListener listener) {
         ArrayList<Properties> endpoints = new ArrayList<>();
         synchronized (this.discoveredEndpoints) {

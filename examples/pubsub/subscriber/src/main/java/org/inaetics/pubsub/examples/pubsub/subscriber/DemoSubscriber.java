@@ -3,9 +3,15 @@ package org.inaetics.pubsub.examples.pubsub.subscriber;
 import org.inaetics.pubsub.api.Subscriber;
 import org.inaetics.pubsub.examples.pubsub.common.Location;
 import org.inaetics.pubsub.examples.pubsub.common.PointOfInterrest;
+import org.osgi.service.component.annotations.Component;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+@Component(
+        immediate = true,
+        service = Subscriber.class,
+        property = Subscriber.PUBSUB_TOPIC + "=poi1"
+)
 public class DemoSubscriber implements Subscriber<Location> {
 
     @Override
