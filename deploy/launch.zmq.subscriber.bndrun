@@ -1,4 +1,4 @@
--runfw: org.apache.felix.framework;version=5.6.10
+-runfw: org.apache.felix.framework
 -runee: JavaSE-1.8
 -runvm: -ea
 
@@ -26,3 +26,11 @@
   bnd.identity; id=org.inaetics.pubsub.serialization.json, \
   bnd.identity; id=org.inaetics.pubsub.psa.zeromq, \
   bnd.identity; id=org.inaetics.pubsub.examples.pubsub.subscriber
+
+-runbundles+:\
+    org.apache.felix.scr;startlevel=90,\
+    org.inaetics.pubsub.psa.zeromq;startlevel=95,\
+    org.inaetics.pubsub.discovery.etcd;startlevel=95,\
+    org.inaetics.pubsub.serialization.json;startlevel=95,\
+    org.inaetics.pubsub.topologymanager;startlevel=100,\
+    *;startlevel=110

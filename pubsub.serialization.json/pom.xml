@@ -12,6 +12,23 @@
     <artifactId>org.inaetics.pubsub.serialization.json</artifactId>
     <name>INAETICS PubSub Serialization JSON</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <configuration>
+                    <bnd combine.self="override"><![CDATA[
+#Always export packages with a @Version annotation
+-exportcontents: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
+DynamicImport-Package: *
+]]>
+                    </bnd>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.inaetics.pubsub</groupId>
